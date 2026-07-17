@@ -15,6 +15,25 @@ const { PROPERTY } = require('./src/scenario');
 requireApiKey();
 assertPactaDir();
 
+// LLM API failures reach the chat as human sentences, not raw JSON.
+function friendlyError(message) {
+  const msg = String(message || '');
+  if (/credit balance is too low/i.test(msg)) {
+    return 'Your Anthropic account has no API credits. Top up at console.anthropic.com (Plans & Billing) and try again - no restart needed.';
+  }
+  if (/invalid x-api-key|authentication_error/i.test(msg)) {
+    return 'The Anthropic API key in .env is not valid. Fix ANTHROPIC_API_KEY and restart the demo.';
+  }
+  if (/rate_limit/i.test(msg)) {
+    return 'The Anthropic API rate limit was hit. Give it a minute and try again.';
+  }
+  if (/overloaded/i.test(msg)) {
+    return 'The Anthropic API is temporarily overloaded. Try again in a moment.';
+  }
+  const inner = msg.match(/"message"\s*:\s*"([^"]+)"/);
+  return inner ? inner[1] : msg;
+}
+
 async function main() {
   const mcp = await connectPactaMcp();
   const agent = createAgent(mcp);
@@ -67,7 +86,7 @@ async function main() {
     try {
       await agent.runTurn(text, send);
     } catch (err) {
-      send({ type: 'error', message: err.message });
+      send({ type: 'error', message: friendlyError(err.message) });
     } finally {
       busy = false;
       res.end();

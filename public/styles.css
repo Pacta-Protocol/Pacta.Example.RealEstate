@@ -46,6 +46,24 @@ body {
   padding: 7px 14px; border-radius: 999px; text-decoration: none;
 }
 .pacta-badge strong { color: var(--amber); }
+.top-actions { display: flex; align-items: center; gap: 14px; }
+.tech-toggle {
+  display: flex; align-items: center; gap: 7px; font-size: 12.5px;
+  color: var(--muted); cursor: pointer; user-select: none;
+}
+.tech-toggle input { position: absolute; opacity: 0; }
+.tech-track {
+  width: 30px; height: 17px; border-radius: 999px; background: var(--line);
+  border: 1px solid var(--muted); position: relative; transition: background .15s;
+}
+.tech-track::after {
+  content: ""; position: absolute; top: 1px; left: 1px; width: 13px; height: 13px;
+  border-radius: 50%; background: var(--card); border: 1px solid var(--muted);
+  transition: left .15s;
+}
+.tech-toggle input:checked + .tech-track { background: var(--olive); border-color: var(--olive); }
+.tech-toggle input:checked + .tech-track::after { left: 14px; border-color: var(--olive); }
+body.tech .tech-toggle { color: var(--olive); font-weight: 600; }
 
 /* ── Property hero ───────────────────────────────────────────────────── */
 .property { display: grid; grid-template-columns: 300px 1fr 200px; overflow: hidden; margin-bottom: 14px; }
@@ -65,8 +83,10 @@ body {
 .stepper { display: flex; align-items: center; padding: 14px 22px; gap: 10px; margin-bottom: 14px; }
 .lane { display: flex; align-items: center; gap: 10px; flex: 1; }
 .lane-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--line); border: 2px solid var(--muted); flex: none; }
+.lane-text { display: flex; flex-direction: column; min-width: 0; }
 .lane-name { font-family: var(--serif); font-weight: 700; }
 .lane-status { font-size: 12px; color: var(--muted); }
+.lane-detail { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lane-link { height: 2px; flex: 0 0 46px; background: var(--line); border-radius: 2px; }
 .lane.working .lane-dot { background: var(--amber); border-color: var(--terra); animation: pulse 1.2s infinite; }
 .lane.verifying .lane-dot { background: var(--sea); border-color: var(--sea); animation: pulse 1.2s infinite; }
@@ -95,6 +115,26 @@ body {
 }
 .tool-chip.err { color: #e07a7a; }
 .tool-chip .ok { color: #9dc978; }
+
+/* Folded protocol activity between messages. Hidden for humans; the run's
+   progress lives in the stepper and the protocol panel instead. */
+details.activity { margin: 0 0 12px; }
+body:not(.tech) details.activity { display: none; }
+details.activity summary {
+  cursor: pointer; font-family: var(--mono); font-size: 11.5px;
+  color: var(--muted); list-style: none;
+}
+details.activity summary::before { content: "⚙ "; }
+details.activity summary::-webkit-details-marker { display: none; }
+details.activity[open] summary { margin-bottom: 6px; }
+.act-body { display: flex; flex-wrap: wrap; }
+
+/* Heartbeat while the copilot works (it stays quiet between milestones). */
+.working { font-size: 13px; color: var(--muted); font-style: italic; margin: 2px 0 12px 4px; }
+.working .dots i { font-style: normal; animation: blink 1.2s infinite; }
+.working .dots i:nth-child(2) { animation-delay: .2s; }
+.working .dots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 60% { opacity: .15; } 30% { opacity: 1; } }
 .chat-suggest { padding: 0 20px 10px; }
 .chat-suggest button {
   font: inherit; font-size: 13px; color: var(--terra-dark);
@@ -138,6 +178,7 @@ body {
 .evt.refund, .evt.stake_slash { border-color: var(--danger); }
 .evt.stake_slash .evt-amt { color: #e07a7a; }
 .evt .evt-memo { color: #8d8168; display: block; }
+body:not(.tech) .evt-memo { display: none; }
 .protocol-foot {
   display: flex; justify-content: space-between; padding: 10px 16px;
   border-top: 1px solid var(--dark-line); color: #7d715a; font-size: 11px;

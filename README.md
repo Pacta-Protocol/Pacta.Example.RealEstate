@@ -42,7 +42,9 @@ cp .env.example .env          # then set ANTHROPIC_API_KEY=sk-ant-...
 npm run demo                  # → http://localhost:3300
 ```
 
-Click the suggested prompt ("Run the full due diligence…") and watch both panels: the copilot narrates on the left; contracts, escrow movements, the dispute, the slash and the payouts appear on the right as raw ledger events.
+Click the suggested prompt ("Run the full due diligence…") and watch both panels: the copilot reports milestones on the left; contracts, escrow movements, the dispute, the slash and the payouts appear on the right as raw ledger events.
+
+Two viewing modes, one run: by default the copilot talks like a colleague (milestones only, tool activity folded away). Flip **Technical view** in the header to expose every MCP tool call and the full ledger memos - same session, different audience.
 
 ### Bring your own key
 

@@ -20,7 +20,12 @@
         <div class="brand-tag">Cross-border acquisition copilot</div>
       </div>
     </div>
-    <a class="pacta-badge" id="pacta-badge" href="#" target="_blank" rel="noopener">Built on <strong>Pacta</strong> ⬡</a>
+    <div class="top-actions">
+      <label class="tech-toggle" title="Show the raw protocol activity: every tool call the copilot makes and the full ledger detail">
+        <input type="checkbox" id="tech-toggle"><span class="tech-track" aria-hidden="true"></span>Technical view
+      </label>
+      <a class="pacta-badge" id="pacta-badge" href="#" target="_blank" rel="noopener">Built on <strong>Pacta</strong> ⬡</a>
+    </div>
   </header>
 
   <section class="property card">
@@ -68,19 +73,19 @@
   </section>
 
   <section class="stepper card" id="stepper">
-    <div class="lane" data-cat="title-study"><div class="lane-dot"></div><div class="lane-name">Title Study</div><div class="lane-status">pending</div></div>
+    <div class="lane" data-cat="title-study"><div class="lane-dot"></div><div class="lane-text"><div class="lane-name">Title Study</div><div class="lane-status">pending</div><div class="lane-detail"></div></div></div>
     <div class="lane-link"></div>
-    <div class="lane" data-cat="survey"><div class="lane-dot"></div><div class="lane-name">Cadastral Survey</div><div class="lane-status">pending</div></div>
+    <div class="lane" data-cat="survey"><div class="lane-dot"></div><div class="lane-text"><div class="lane-name">Cadastral Survey</div><div class="lane-status">pending</div><div class="lane-detail"></div></div></div>
     <div class="lane-link"></div>
-    <div class="lane" data-cat="notary"><div class="lane-dot"></div><div class="lane-name">Transfer Deed</div><div class="lane-status">pending</div></div>
+    <div class="lane" data-cat="notary"><div class="lane-dot"></div><div class="lane-text"><div class="lane-name">Transfer Deed</div><div class="lane-status">pending</div><div class="lane-detail"></div></div></div>
   </section>
 
   <main class="split">
     <section class="chat card">
       <div class="chat-log" id="chat-log">
         <div class="msg assistant">
-          <p>Welcome. I'm your acquisition copilot for this closing. I hire only <strong>vetted</strong> Costa Rican providers - the ones with their own money staked on their performance - and I verify every deliverable against the public registry before releasing a single dollar.</p>
-          <p>Ask me to run the due diligence when you're ready.</p>
+          <p>Hi - I'm your copilot for this closing. Tell me what you need and I'll take care of it: hiring the right local professionals, holding the money in escrow, and checking every deliverable against Costa Rica's public registries before anyone gets paid.</p>
+          <p>I'll keep it brief while I work. If you want to watch the machinery underneath, flip on <strong>Technical view</strong> up top.</p>
         </div>
       </div>
       <div class="chat-suggest" id="chat-suggest">
@@ -95,7 +100,7 @@
     <aside class="protocol card">
       <div class="protocol-head">
         <span class="protocol-title">PACTA PROTOCOL</span>
-        <span class="protocol-sub">ledger truth · not the agent's claims</span>
+        <span class="protocol-sub">The neutral record: every contract, escrow move and payment below was written by the protocol itself - not by the copilot.</span>
       </div>
       <div class="providers" id="providers"></div>
       <div class="feed" id="feed"><div class="feed-empty">No protocol events yet.</div></div>
