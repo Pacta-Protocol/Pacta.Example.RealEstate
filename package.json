@@ -1,0 +1,23 @@
+{
+  "name": "pacta-example-realestate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LandBridge - example vertical app on the Pacta protocol: a US development consortium runs land-purchase due diligence in Costa Rica through an LLM copilot that discovers, contracts, escrows, verifies and pays vetted local providers via MCP.",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node scripts/demo.js",
+    "seed": "node scripts/seed-demo.js",
+    "sim": "node scripts/market-sim.js",
+    "roundtrip": "node scripts/roundtrip.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^5.1.0"
+  }
+}

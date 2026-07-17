@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LandBridge - Cross-border acquisition copilot</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 28" aria-hidden="true">
+        <path d="M2 26 C 8 8, 32 8, 38 26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <line x1="11" y1="15.5" x2="11" y2="26" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="20" y1="12.5" x2="20" y2="26" stroke="currentColor" stroke-width="2.5"/>
+        <line x1="29" y1="15.5" x2="29" y2="26" stroke="currentColor" stroke-width="2.5"/>
+      </svg>
+      <div>
+        <div class="brand-name">LandBridge</div>
+        <div class="brand-tag">Cross-border acquisition copilot</div>
+      </div>
+    </div>
+    <a class="pacta-badge" id="pacta-badge" href="#" target="_blank" rel="noopener">Built on <strong>Pacta</strong> ⬡</a>
+  </header>
+
+  <section class="property card">
+    <div class="property-art" aria-hidden="true">
+      <svg viewBox="0 0 300 170" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f7b267"/><stop offset=".55" stop-color="#e8875a"/><stop offset="1" stop-color="#c05b2e"/>
+          </linearGradient>
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2e6f6c"/><stop offset="1" stop-color="#1d4a49"/>
+          </linearGradient>
+        </defs>
+        <rect width="300" height="110" fill="url(#sky)"/>
+        <circle cx="228" cy="72" r="26" fill="#fde8c9"/>
+        <rect y="110" width="300" height="60" fill="url(#sea)"/>
+        <path d="M0 118 Q 40 112 80 118 T 160 118 T 240 118 T 300 118 V 170 H 0 Z" fill="#175655" opacity=".7"/>
+        <path d="M0 132 Q 50 126 100 132 T 200 132 T 300 132 V 170 H 0 Z" fill="#0f3c3b" opacity=".8"/>
+        <g stroke="#1d2b1e" stroke-width="3" fill="none" stroke-linecap="round">
+          <path d="M52 128 C 50 100 48 88 46 78"/>
+        </g>
+        <g fill="#245c33">
+          <path d="M46 78 C 30 70 20 72 10 80 C 24 76 36 78 46 82 Z"/>
+          <path d="M46 78 C 62 68 74 70 84 78 C 70 74 58 78 46 82 Z"/>
+          <path d="M46 78 C 40 62 42 54 50 46 C 46 58 48 68 50 78 Z"/>
+        </g>
+      </svg>
+    </div>
+    <div class="property-info">
+      <div class="property-kicker">Acquisition in progress</div>
+      <h1 id="prop-name">-</h1>
+      <div class="property-loc" id="prop-loc">-</div>
+      <dl class="property-facts" id="prop-facts"></dl>
+    </div>
+    <div class="property-side">
+      <div class="side-block">
+        <div class="side-label">Buyer funds (simulated)</div>
+        <div class="side-value" id="agent-balance">-</div>
+      </div>
+      <div class="side-block">
+        <div class="side-label">Due-diligence budget</div>
+        <div class="side-value" id="prop-budget">-</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stepper card" id="stepper">
+    <div class="lane" data-cat="title-study"><div class="lane-dot"></div><div class="lane-name">Title Study</div><div class="lane-status">pending</div></div>
+    <div class="lane-link"></div>
+    <div class="lane" data-cat="survey"><div class="lane-dot"></div><div class="lane-name">Cadastral Survey</div><div class="lane-status">pending</div></div>
+    <div class="lane-link"></div>
+    <div class="lane" data-cat="notary"><div class="lane-dot"></div><div class="lane-name">Transfer Deed</div><div class="lane-status">pending</div></div>
+  </section>
+
+  <main class="split">
+    <section class="chat card">
+      <div class="chat-log" id="chat-log">
+        <div class="msg assistant">
+          <p>Welcome. I'm your acquisition copilot for this closing. I hire only <strong>vetted</strong> Costa Rican providers - the ones with their own money staked on their performance - and I verify every deliverable against the public registry before releasing a single dollar.</p>
+          <p>Ask me to run the due diligence when you're ready.</p>
+        </div>
+      </div>
+      <div class="chat-suggest" id="chat-suggest">
+        <button id="suggest-btn">Run the full due diligence for Finca Vista Pacífico (budget $6,000)</button>
+      </div>
+      <form class="chat-input" id="chat-form">
+        <input id="chat-text" type="text" placeholder="Message your copilot…" autocomplete="off">
+        <button type="submit" id="chat-send">Send</button>
+      </form>
+    </section>
+
+    <aside class="protocol card">
+      <div class="protocol-head">
+        <span class="protocol-title">PACTA PROTOCOL</span>
+        <span class="protocol-sub">ledger truth · not the agent's claims</span>
+      </div>
+      <div class="providers" id="providers"></div>
+      <div class="feed" id="feed"><div class="feed-empty">No protocol events yet.</div></div>
+      <div class="protocol-foot">
+        <span id="invariant">ledger: -</span>
+        <a id="explorer-link" href="#" target="_blank" rel="noopener">open explorer ↗</a>
+      </div>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
