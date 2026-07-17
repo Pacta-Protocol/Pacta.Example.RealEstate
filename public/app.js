@@ -88,14 +88,26 @@ function renderProviders(smbs) {
     </div>`).join('');
 }
 
-function renderFeed(transactions) {
+// The human line names what the money was for (the service; on a slash, the
+// punished provider) - the raw engagement number only exists in the memo,
+// which is visible in technical view.
+const CAT_LABEL = { 'title-study': 'title study', survey: 'cadastral survey', notary: 'transfer deed' };
+
+function renderFeed(transactions, engagements) {
   const feed = $('#feed');
   if (!transactions.length) { feed.innerHTML = '<div class="feed-empty">No protocol events yet.</div>'; return; }
+  const byId = new Map(engagements.map((e) => [e.id, e]));
+  const forWhat = (t) => {
+    const e = byId.get(t.engagement_id);
+    if (!e) return '';
+    const label = t.type === 'stake_slash' ? e.smb.name : (CAT_LABEL[e.smb.category] || e.smb.category);
+    return ` · ${esc(label)}`;
+  };
   // column-reverse container: newest first in DOM order = bottom-anchored feel
   feed.innerHTML = transactions.map((t) => `
     <div class="evt ${esc(t.type)}">
-      <span class="evt-amt">${usd(t.amount_cents)}</span> ${esc(t.type)}${t.engagement_id ? ` · eng #${t.engagement_id}` : ''}
-      <span class="evt-memo">${esc(t.memo)}</span>
+      <span class="evt-amt">${usd(t.amount_cents)}</span> ${esc(t.type)}${forWhat(t)}
+      <span class="evt-memo">${t.engagement_id ? `eng #${t.engagement_id} — ` : ''}${esc(t.memo)}</span>
     </div>`).join('');
 }
 
@@ -106,7 +118,7 @@ async function poll() {
     const m = await res.json();
     renderStepper(m.engagements);
     renderProviders(m.smbs);
-    renderFeed(m.transactions);
+    renderFeed(m.transactions, m.engagements);
     $('#agent-balance').textContent = usd(m.agent_balance_cents);
     $('#invariant').textContent = `ledger: ${m.invariant.ok ? 'balanced ✓' : 'BROKEN ✗'} (${usd(m.invariant.total_minted_cents)} minted)`;
   } catch { /* marketplace momentarily unreachable */ }
