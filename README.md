@@ -1,5 +1,7 @@
 # LandBridge - cross-border real estate on Pacta
 
+[![CI](https://github.com/Pacta-Protocol/Pacta.Example.RealEstate/actions/workflows/ci.yml/badge.svg)](https://github.com/Pacta-Protocol/Pacta.Example.RealEstate/actions/workflows/ci.yml)
+
 An example **vertical agentic app** built on the [Pacta protocol](https://github.com/Pacta-Protocol/Pacta.Protocol): a US development consortium is buying coastal land in Guanacaste, Costa Rica, and an LLM copilot runs the entire closing due diligence - it discovers local providers, contracts them, funds escrow, **verifies every deliverable against the public registry**, and releases payment. All through Pacta's MCP surface, without modifying a line of the protocol.
 
 ## Why this scenario

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-roundtrip:
+    name: Tests + deterministic roundtrip
+    runs-on: ubuntu-latest
+    env:
+      # The example reuses the protocol's MCP server and db modules from a local clone.
+      PACTA_DIR: ${{ github.workspace }}/protocol
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out the Pacta protocol
+        uses: actions/checkout@v4
+        with:
+          repository: Pacta-Protocol/Pacta.Protocol
+          path: protocol
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm ci
+        working-directory: protocol
+      - name: Unit & integration tests (no LLM needed)
+        run: npm test
+      - name: Deterministic MCP roundtrip + REST audit (no LLM needed)
+        run: npm run roundtrip
