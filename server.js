@@ -4,31 +4,37 @@
 //   2. run the copilot's agentic turns, streamed to the browser as SSE
 //   3. proxy a read-only protocol snapshot so the UI's timeline shows what
 //      the PROTOCOL says happened - never what the agent claims.
-// The Anthropic key never leaves this process; the browser only talks here.
+// Model keys never leave this process; the browser only talks here.
 const express = require('express');
 const path = require('node:path');
-const { config, requireApiKey, assertPactaDir } = require('./src/config');
+const { config, requireLlmConfig, assertPactaDir } = require('./src/config');
 const { connectPactaMcp } = require('./src/mcp');
 const { createAgent } = require('./src/agent');
 const { PROPERTY } = require('./src/scenario');
 
-requireApiKey();
+requireLlmConfig();
 assertPactaDir();
 
 // LLM API failures reach the chat as human sentences, not raw JSON.
 function friendlyError(message) {
   const msg = String(message || '');
+  if (/ECONNREFUSED|fetch failed/i.test(msg) && config.LLM.provider === 'openai') {
+    return `Cannot reach the model server at ${config.LLM.baseUrl}. If you are running locally, make sure Ollama (or your endpoint) is up, then try again.`;
+  }
+  if (/model .* not found|no such model/i.test(msg)) {
+    return `The model "${config.LLM.model}" is not available on your endpoint. Pull it first (e.g. "ollama pull ${config.LLM.model}") or set LANDBRIDGE_MODEL in .env.`;
+  }
   if (/credit balance is too low/i.test(msg)) {
     return 'Your Anthropic account has no API credits. Top up at console.anthropic.com (Plans & Billing) and try again - no restart needed.';
   }
   if (/invalid x-api-key|authentication_error/i.test(msg)) {
-    return 'The Anthropic API key in .env is not valid. Fix ANTHROPIC_API_KEY and restart the demo.';
+    return 'The API key in .env is not valid. Fix it and restart the demo.';
   }
   if (/rate_limit/i.test(msg)) {
-    return 'The Anthropic API rate limit was hit. Give it a minute and try again.';
+    return 'The LLM API rate limit was hit. Give it a minute and try again.';
   }
   if (/overloaded/i.test(msg)) {
-    return 'The Anthropic API is temporarily overloaded. Try again in a moment.';
+    return 'The LLM API is temporarily overloaded. Try again in a moment.';
   }
   const inner = msg.match(/"message"\s*:\s*"([^"]+)"/);
   return inner ? inner[1] : msg;
@@ -44,7 +50,7 @@ async function main() {
   const market = async (p) => (await fetch(`${config.PACTA_URL}/api${p}`)).json();
 
   app.get('/api/state', async (req, res) => {
-    res.json({ property: PROPERTY, model: config.MODEL, marketplace_url: config.PACTA_URL });
+    res.json({ property: PROPERTY, model: config.LLM.model, provider: config.LLM.provider, marketplace_url: config.PACTA_URL });
   });
 
   // Protocol truth for the timeline panel: engagements (enriched with the
@@ -100,7 +106,7 @@ async function main() {
   });
 
   app.listen(config.PORT, () => {
-    console.log(`[landbridge] up at http://localhost:${config.PORT} (marketplace: ${config.PACTA_URL}, model: ${config.MODEL})`);
+    console.log(`[landbridge] up at http://localhost:${config.PORT} (marketplace: ${config.PACTA_URL}, model: ${config.LLM.model} via ${config.LLM.provider})`);
   });
 }
 

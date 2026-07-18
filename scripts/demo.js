@@ -3,10 +3,10 @@
 // the LandBridge web app. Ctrl-C tears everything down.
 const { spawn } = require('node:child_process');
 const path = require('node:path');
-const { config, requireApiKey, assertPactaDir } = require('../src/config');
+const { config, requireLlmConfig, assertPactaDir } = require('../src/config');
 const { seed } = require('./seed-demo');
 
-requireApiKey();
+requireLlmConfig();
 assertPactaDir();
 
 const children = [];

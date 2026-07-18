@@ -23,7 +23,7 @@ LandBridge is deliberately skinned as a consumer product (its own brand, warm ed
 
 ## Quick start
 
-Requirements: Node ≥ 22.5, a local clone of the protocol, and your own Anthropic API key.
+Requirements: Node ≥ 22.5, a local clone of the protocol, and an LLM - a **local open-weights model** (via Ollama or any OpenAI-compatible endpoint) or a Claude API key. Or no model at all: see the deterministic roundtrip below.
 
 ```bash
 # 1. The protocol (sibling folder; or point PACTA_DIR anywhere)
@@ -35,8 +35,8 @@ git clone https://github.com/Pacta-Protocol/Pacta.Example.RealEstate.git
 cd Pacta.Example.RealEstate
 npm install
 
-# 3. Bring your own key (never committed, never sent to the browser)
-cp .env.example .env          # then set ANTHROPIC_API_KEY=sk-ant-...
+# 3. Pick your model in .env (see "Choose your model" below)
+cp .env.example .env
 
 # 4. Everything up: seeded marketplace + provider bots + arbiter + web app
 npm run demo                  # → http://localhost:3300
@@ -46,29 +46,41 @@ Click the suggested prompt ("Run the full due diligence…") and watch both pane
 
 Two viewing modes, one run: by default the copilot talks like a colleague (milestones only, tool activity folded away). Flip **Technical view** in the header to expose every MCP tool call and the full ledger memos - same session, different audience.
 
-### Bring your own key
+### Choose your model
 
-- Get a key at [console.anthropic.com](https://console.anthropic.com). The server refuses to start without one and tells you exactly what to do.
-- The key lives only in the Node backend (`.env`, gitignored). The browser talks to your local server, never to the LLM API.
-- Model defaults to `claude-opus-4-8`; override with `LANDBRIDGE_MODEL` in `.env`.
-- A full demo run costs roughly a few tens of cents depending on the model.
+The copilot is model-agnostic: the agentic loop speaks two wire protocols (`src/llm.js`) and picks one from `.env`. Whatever you choose, keys live only in the Node backend (`.env`, gitignored) - the browser never talks to a model API.
 
-## No API key? Run the deterministic roundtrip
+**Fully local - open weights, no key, no cloud:**
 
-The same end-to-end flow - including the fraud, the dispute and the re-hire - driven by a scripted buyer over the identical MCP tools, then **audited independently through the REST API**:
+```bash
+ollama pull qwen3             # or any tool-capable open model
+# .env:
+#   LLM_BASE_URL=http://localhost:11434/v1
+#   LANDBRIDGE_MODEL=qwen3
+```
+
+Everything - marketplace, providers, arbiter, copilot and model - now runs on your machine. Nothing leaves it.
+
+**Any OpenAI-compatible endpoint** (vLLM, OpenRouter, a hosted provider): set `LLM_BASE_URL`, `LLM_API_KEY` and `LANDBRIDGE_MODEL`.
+
+**The Claude API:** set `ANTHROPIC_API_KEY` (get one at [console.anthropic.com](https://console.anthropic.com)); model defaults to `claude-opus-4-8`, override with `LANDBRIDGE_MODEL`. A full demo run costs roughly a few tens of cents.
+
+## No model? The protocol is verifiable without one
+
+The same end-to-end flow - including the fraud, the dispute and the re-hire - driven by a **scripted buyer over the identical MCP tools**, then **audited independently through the REST API**. No LLM, no key, fully deterministic:
 
 ```bash
 npm run roundtrip     # exits 0 only if every audit check passes
-npm test              # unit tests (seed economics, MCP→Claude tool bridge)
+npm test              # unit tests (seed economics, MCP + LLM tool bridges)
 ```
 
-This is also what CI runs: the LLM makes the demo alive, but the protocol flow is verifiable without it.
+This is also what CI runs: an LLM makes the demo alive, but every protocol guarantee - escrow, verification, slashing, the ledger invariant - holds and is checkable without one.
 
 ## How it works
 
 ```
 ┌────────────── LandBridge (this repo) ──────────────┐   ┌── Pacta.Protocol ──┐
-│ browser UI ── SSE ── Express ── Claude (your key)  │   │                    │
+│ browser UI ── SSE ── Express ── LLM (local/API)    │   │                    │
 │                         │ tool_use                 │   │                    │
 │                         └── MCP client ── stdio ───┼──▶│ mcp/server.js      │
 │ scripts/market-sim.js  (providers + arbiter) ──────┼──▶│ REST API + ledger  │
@@ -76,7 +88,7 @@ This is also what CI runs: the LLM makes the demo alive, but the protocol flow i
 └────────────────────────────────────────────────────┘   └────────────────────┘
 ```
 
-- **The copilot's tool surface *is* the protocol's MCP surface** (`src/mcp.js` converts MCP tool descriptors to Claude tool definitions mechanically). Add a tool to the protocol's MCP server and the copilot gains it on restart.
+- **The copilot's tool surface *is* the protocol's MCP surface** (`src/llm.js` converts MCP tool descriptors to each model API's tool format mechanically). Add a tool to the protocol's MCP server and the copilot gains it on restart - whichever model is driving.
 - **`scripts/market-sim.js`** plays the counterparties: honest provider bots that file real registry references, the dishonest surveyor that doesn't, and the arbiter that rules `refund` on disputes (which triggers the protocol's stake slashing).
 - **The demo runs against a fresh, seeded local marketplace** (`server-pacta.js` on port 3240 with its own DB) - never against a live deployment.
 

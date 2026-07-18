@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { toAnthropicTool } = require('../src/mcp');
+const { toAnthropicTool } = require('../src/llm');
 
 test('converts an MCP tool descriptor into a Claude tool definition', () => {
   const converted = toAnthropicTool({

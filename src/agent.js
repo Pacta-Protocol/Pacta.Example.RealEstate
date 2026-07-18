@@ -1,12 +1,11 @@
 'use strict';
-// The LandBridge copilot: a Claude agentic loop whose only tools are the
+// The LandBridge copilot: an LLM agentic loop whose only tools are the
 // Pacta protocol's MCP tools. Streams progress events to the UI while it
 // discovers, contracts, escrows, verifies and pays real-world providers.
-const Anthropic = require('@anthropic-ai/sdk');
-const { config } = require('./config');
+// The model behind it is pluggable (src/llm.js): a local open-weights model
+// via any OpenAI-compatible endpoint, or the Claude API.
+const { createLlmLoop } = require('./llm');
 const { PROPERTY } = require('./scenario');
-
-const MAX_ITERATIONS = 80;
 
 const SYSTEM_PROMPT = `You are LandBridge, the acquisition copilot of a US development consortium buying land in Costa Rica. You act on the buyer's behalf on the Pacta marketplace (you are agent #1) using ONLY the marketplace tools provided.
 
@@ -46,61 +45,11 @@ Your user is a busy executive, not an engineer. The screen already shows your ra
 
 Never invent tool results. If a tool errors, adapt or explain.`;
 
+// Runs user turns to completion. `emit` receives UI events:
+//  {type:'text', text} {type:'tool_use', name, input}
+//  {type:'tool_result', name, is_error, preview} {type:'done'} {type:'error', message}
 function createAgent(mcp) {
-  const anthropic = new Anthropic.Anthropic();
-  const messages = []; // full multi-turn history, tool blocks included
-
-  // Runs one user turn to completion. `emit` receives UI events:
-  //  {type:'text', text} {type:'tool_use', name, input}
-  //  {type:'tool_result', name, is_error, preview} {type:'done'} {type:'error', message}
-  async function runTurn(userText, emit) {
-    messages.push({ role: 'user', content: userText });
-
-    for (let i = 0; i < MAX_ITERATIONS; i++) {
-      const stream = anthropic.messages.stream({
-        model: config.MODEL,
-        max_tokens: 16000,
-        thinking: { type: 'adaptive' },
-        system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-        tools: mcp.tools,
-        messages,
-      });
-      stream.on('text', (delta) => emit({ type: 'text', text: delta }));
-      const message = await stream.finalMessage();
-
-      messages.push({ role: 'assistant', content: message.content });
-
-      if (message.stop_reason === 'pause_turn') continue;
-      if (message.stop_reason !== 'tool_use') {
-        emit({ type: 'done', stop_reason: message.stop_reason });
-        return;
-      }
-
-      const toolUses = message.content.filter((b) => b.type === 'tool_use');
-      const results = [];
-      for (const tu of toolUses) {
-        emit({ type: 'tool_use', name: tu.name, input: tu.input });
-        let result;
-        try {
-          result = await mcp.call(tu.name, tu.input);
-        } catch (err) {
-          result = { text: `Tool failed: ${err.message}`, isError: true };
-        }
-        emit({
-          type: 'tool_result', name: tu.name, is_error: result.isError,
-          preview: result.text.length > 400 ? `${result.text.slice(0, 400)}…` : result.text,
-        });
-        results.push({
-          type: 'tool_result', tool_use_id: tu.id,
-          content: result.text, ...(result.isError ? { is_error: true } : {}),
-        });
-      }
-      messages.push({ role: 'user', content: results });
-    }
-    emit({ type: 'error', message: `Stopped after ${MAX_ITERATIONS} iterations without finishing.` });
-  }
-
-  return { runTurn, reset: () => { messages.length = 0; } };
+  return createLlmLoop({ system: SYSTEM_PROMPT, mcp });
 }
 
 module.exports = { createAgent, SYSTEM_PROMPT };

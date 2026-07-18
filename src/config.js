@@ -9,6 +9,23 @@ if (fs.existsSync(envFile)) process.loadEnvFile(envFile);
 const ROOT = path.join(__dirname, '..');
 const PACTA_DIR = path.resolve(ROOT, process.env.PACTA_DIR || '../../protocol');
 
+// Which LLM drives the copilot. Two providers:
+//   - 'openai':    any OpenAI-compatible endpoint (a local Ollama, vLLM,
+//                  OpenRouter, ...) - selected whenever LLM_BASE_URL is set,
+//                  or explicitly with LANDBRIDGE_PROVIDER=openai.
+//   - 'anthropic': the Claude API - needs ANTHROPIC_API_KEY.
+// Explicit LANDBRIDGE_PROVIDER wins; otherwise LLM_BASE_URL implies openai.
+function resolveLlm() {
+  const explicit = (process.env.LANDBRIDGE_PROVIDER || '').toLowerCase();
+  const provider = explicit || (process.env.LLM_BASE_URL ? 'openai' : 'anthropic');
+  return {
+    provider,
+    model: process.env.LANDBRIDGE_MODEL || (provider === 'openai' ? 'qwen3' : 'claude-opus-4-8'),
+    baseUrl: process.env.LLM_BASE_URL || 'http://localhost:11434/v1',
+    apiKey: process.env.LLM_API_KEY || '',
+  };
+}
+
 const config = {
   ROOT,
   // The protocol clone this example builds on. Never modified - only consumed.
@@ -17,16 +34,22 @@ const config = {
   get PACTA_URL() { return `http://127.0.0.1:${this.PACTA_PORT}`; },
   PORT: Number(process.env.PORT || 3300),
   DB_PATH: process.env.DB_PATH || path.join(ROOT, 'data', 'landbridge-demo.db'),
-  MODEL: process.env.LANDBRIDGE_MODEL || 'claude-opus-4-8',
+  LLM: resolveLlm(),
   SIM_STEP_DELAY_MS: Number(process.env.SIM_STEP_DELAY_MS || 1200),
   SIM_RULING_DELAY_MS: Number(process.env.SIM_RULING_DELAY_MS || 1500),
 };
 
-function requireApiKey() {
+function requireLlmConfig() {
+  if (config.LLM.provider === 'openai') return; // local endpoints need no key
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error(
-      '\n  ANTHROPIC_API_KEY is not set.\n\n' +
-      '  LandBridge uses your own Claude API key (bring-your-own-key):\n' +
+      '\n  No LLM is configured. LandBridge runs on either:\n\n' +
+      '  A fully local open-weights model (no key, no cloud):\n' +
+      '    1. Install Ollama (https://ollama.com) and run: ollama pull qwen3\n' +
+      '    2. In .env set LLM_BASE_URL=http://localhost:11434/v1 and LANDBRIDGE_MODEL=qwen3\n\n' +
+      '  Or any OpenAI-compatible endpoint (vLLM, OpenRouter, ...):\n' +
+      '    Set LLM_BASE_URL, LLM_API_KEY and LANDBRIDGE_MODEL in .env\n\n' +
+      '  Or your own Claude API key:\n' +
       '    1. Get a key at https://console.anthropic.com\n' +
       '    2. cp .env.example .env\n' +
       '    3. Set ANTHROPIC_API_KEY=sk-ant-... in .env\n',
@@ -49,4 +72,4 @@ function assertPactaDir() {
   }
 }
 
-module.exports = { config, requireApiKey, assertPactaDir };
+module.exports = { config, requireLlmConfig, assertPactaDir };
